@@ -1,0 +1,58 @@
+name: App Secret Expiry Check
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"    # every Monday at 6am UTC
+  workflow_dispatch:        # allows manual trigger from the Actions tab
+
+jobs:
+  run-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Run expiry check script
+        id: check
+        shell: pwsh
+        env:
+          DEV_TENANT_ID: ${{ secrets.DEV_TENANT_ID }}
+          DEV_CLIENT_ID: ${{ secrets.DEV_CLIENT_ID }}
+          DEV_CLIENT_SECRET: ${{ secrets.DEV_CLIENT_SECRET }}
+          STG_TENANT_ID: ${{ secrets.STG_TENANT_ID }}
+          STG_CLIENT_ID: ${{ secrets.STG_CLIENT_ID }}
+          STG_CLIENT_SECRET: ${{ secrets.STG_CLIENT_SECRET }}
+          PRD_TENANT_ID: ${{ secrets.PRD_TENANT_ID }}
+          PRD_CLIENT_ID: ${{ secrets.PRD_CLIENT_ID }}
+          PRD_CLIENT_SECRET: ${{ secrets.PRD_CLIENT_SECRET }}
+          CONFLUENCE_EMAIL: ${{ secrets.CONFLUENCE_EMAIL }}
+          CONFLUENCE_API_TOKEN: ${{ secrets.CONFLUENCE_API_TOKEN }}
+          CONFLUENCE_BASE_URL: ${{ secrets.CONFLUENCE_BASE_URL }}
+          CONFLUENCE_PAGE_ID: ${{ secrets.CONFLUENCE_PAGE_ID }}
+        run: pwsh -File ./check-expiry.ps1
+
+      - name: Send alert email
+        if: steps.check.outputs.NEEDS_ALERT == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Warning: App Secret Expiry Alert"
+          to: ${{ secrets.NOTIFY_EMAIL_TO }}
+          from: App Secret Monitor
+          body: file://urgent_summary.txt
+
+      - name: Send critical alert email
+        if: steps.check.outputs.NEEDS_CRITICAL_ALERT == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "URGENT: App Secret Expired or Expiring Within 1 Month"
+          to: ${{ secrets.NOTIFY_EMAIL_TO }}
+          from: App Secret Monitor
+          body: file://critical_summary.txt
