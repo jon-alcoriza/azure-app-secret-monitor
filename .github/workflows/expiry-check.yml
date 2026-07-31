@@ -46,7 +46,7 @@ jobs:
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: mailhost.nordicsemi.no
-          server_port: 25
+          server_port: 2525
           subject: Warning App Secret Expiry Alert
           to: ${{ secrets.NOTIFY_EMAIL_TO }}
           from: App Secret Monitor <noreply@nordicsemi.no>
@@ -58,7 +58,7 @@ jobs:
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: mailhost.nordicsemi.no
-          server_port: 25
+          server_port: 2525
           subject: URGENT App Secret Expired or Expiring Within 1 Month
           to: ${{ secrets.NOTIFY_EMAIL_TO }}
           from: App Secret Monitor <noreply@nordicsemi.no>
