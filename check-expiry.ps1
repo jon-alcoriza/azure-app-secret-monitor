@@ -22,10 +22,10 @@ function Get-SecretStatus {
         return @{ Status = "Expired"; Color = "Red" }
     }
     elseif ($ExpirationDate -le $oneMonthThreshold) {
-        return @{ Status = "Critical - Expiring within 1 Month"; Color = "Blue" }
+        return @{ Status = "Critical - Expiring within 1 Month"; Color = "Yellow" }
     }
     elseif ($ExpirationDate -le $threeMonthThreshold) {
-        return @{ Status = "Expiring Soon"; Color = "Yellow" }
+        return @{ Status = "Expiring Soon"; Color = "Blue" }
     }
     else {
         return @{ Status = "Valid"; Color = "Green" }
