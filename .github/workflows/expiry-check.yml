@@ -30,37 +30,29 @@ jobs:
           CONFLUENCE_BASE_URL: ${{ secrets.CONFLUENCE_BASE_URL }}
           CONFLUENCE_PAGE_ID: ${{ secrets.CONFLUENCE_PAGE_ID }}
         run: pwsh -File ./check-expiry.ps1
-        
-      - name: Debug secret presence
-        run: |
-          if [ -z "${{ secrets.NOTIFY_EMAIL_TO }}" ]; then
-            echo "NOTIFY_EMAIL_TO is EMPTY or NOT SET"
-          else
-            echo "NOTIFY_EMAIL_TO has a value (length: ${#NOTIFY_EMAIL_TO})"
-          fi
-        env:
-          NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO }}
-          
+
       - name: Send alert email
         if: steps.check.outputs.NEEDS_ALERT == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: mailhost.nordicsemi.no
-          server_port: 2525
+          server_address: smtp.office365.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
           subject: Warning App Secret Expiry Alert
           to: ${{ secrets.NOTIFY_EMAIL_TO }}
-          from: App Secret Monitor <noreply@nordicsemi.no>
+          from: App Secret Monitor <${{ secrets.SMTP_USERNAME }}>
           body: file://urgent_summary.txt
-          secure: false
 
       - name: Send critical alert email
         if: steps.check.outputs.NEEDS_CRITICAL_ALERT == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: mailhost.nordicsemi.no
-          server_port: 2525
+          server_address: smtp.office365.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
           subject: URGENT App Secret Expired or Expiring Within 1 Month
           to: ${{ secrets.NOTIFY_EMAIL_TO }}
-          from: App Secret Monitor <noreply@nordicsemi.no>
+          from: App Secret Monitor <${{ secrets.SMTP_USERNAME }}>
           body: file://critical_summary.txt
-          secure: false
