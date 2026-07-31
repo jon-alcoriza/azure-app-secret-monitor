@@ -2,8 +2,8 @@ name: App Secret Expiry Check
 
 on:
   schedule:
-    - cron: "0 6 * * 1"    # every Monday at 6am UTC
-  workflow_dispatch:        # allows manual trigger from the Actions tab
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
 
 jobs:
   run-check:
@@ -35,24 +35,22 @@ jobs:
         if: steps.check.outputs.NEEDS_ALERT == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "Warning: App Secret Expiry Alert"
+          server_address: mailhost.nordicsemi.no
+          server_port: 25
+          subject: Warning App Secret Expiry Alert
           to: ${{ secrets.NOTIFY_EMAIL_TO }}
-          from: App Secret Monitor
+          from: App Secret Monitor <noreply@nordicsemi.no>
           body: file://urgent_summary.txt
+          secure: false
 
       - name: Send critical alert email
         if: steps.check.outputs.NEEDS_CRITICAL_ALERT == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "URGENT: App Secret Expired or Expiring Within 1 Month"
+          server_address: mailhost.nordicsemi.no
+          server_port: 25
+          subject: URGENT App Secret Expired or Expiring Within 1 Month
           to: ${{ secrets.NOTIFY_EMAIL_TO }}
-          from: App Secret Monitor
+          from: App Secret Monitor <noreply@nordicsemi.no>
           body: file://critical_summary.txt
+          secure: false
